@@ -49,7 +49,7 @@ contract Counter is BaseHook {
         IPoolManager.ModifyPositionParams calldata,
         bytes calldata hookData
     ) external override returns (bytes4) {
-        if (hookData.length == 0) return BaseHook.beforeModifyPosition.selector;
+        return BaseHook.beforeModifyPosition.selector;
         ResponseStruct memory response = abi.decode(hookData, (ResponseStruct));
         bool valid = axiomQuery.areResponsesValid(
             response.keccakBlockResponse,
