@@ -23,6 +23,9 @@ contract CounterTest is HookTest, Deployers, GasSnapshot {
     PoolKey poolKey;
     PoolId poolId;
 
+    address alice = makeAddr("alice");
+    address bob = makeAddr("bob");
+
     function setUp() public {
         // creates the pool manager, test tokens, and other utility routers
         HookTest.initHookTestEnv();
@@ -39,12 +42,33 @@ contract CounterTest is HookTest, Deployers, GasSnapshot {
         poolId = poolKey.toId();
         manager.initialize(poolKey, SQRT_RATIO_1_1, ZERO_BYTES);
 
-        // Provide liquidity to the pool
-        modifyPositionRouter.modifyPosition(poolKey, IPoolManager.ModifyPositionParams(-60, 60, 10 ether));
-        modifyPositionRouter.modifyPosition(poolKey, IPoolManager.ModifyPositionParams(-120, 120, 10 ether));
         modifyPositionRouter.modifyPosition(
-            poolKey, IPoolManager.ModifyPositionParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 10 ether)
+            poolKey, IPoolManager.ModifyPositionParams(-60, 60, 10 ether), abi.encode(address(this))
         );
+        modifyPositionRouter.modifyPosition(
+            poolKey, IPoolManager.ModifyPositionParams(-120, 120, 10 ether), abi.encode(address(this))
+        );
+        modifyPositionRouter.modifyPosition(
+            poolKey,
+            IPoolManager.ModifyPositionParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 10 ether),
+            abi.encode(address(this))
+        );
+
+        // deal tokens to alice and bob
+        token0.transfer(alice, 100 ether);
+        token1.transfer(alice, 100 ether);
+        token0.transfer(bob, 100 ether);
+        token1.transfer(bob, 100 ether);
+
+        vm.startPrank(alice);
+        token0.approve(address(modifyPositionRouter), 100 ether);
+        token1.approve(address(modifyPositionRouter), 100 ether);
+        vm.stopPrank();
+
+        vm.startPrank(bob);
+        token0.approve(address(modifyPositionRouter), 100 ether);
+        token1.approve(address(modifyPositionRouter), 100 ether);
+        vm.stopPrank();
     }
 
     function testCounterHooks() public {
@@ -52,5 +76,20 @@ contract CounterTest is HookTest, Deployers, GasSnapshot {
         assertEq(counter.afterModifyPositionCount(), 3);
 
         console2.logBytes32(PoolId.unwrap(poolId));
+    }
+
+    // --- Router Tests --- //
+    // Confirm that Bob cannot modify Alice's position using empty bytes
+    function testNotAllowed() public {
+        vm.prank(alice);
+        modifyPositionRouter.modifyPosition(
+            poolKey, IPoolManager.ModifyPositionParams(-60, 60, 10 ether), abi.encode(alice)
+        );
+
+        vm.startPrank(bob);
+        vm.expectRevert();
+        modifyPositionRouter.modifyPosition(
+            poolKey, IPoolManager.ModifyPositionParams(-60, 60, 10 ether), abi.encode(alice)
+        );
     }
 }
