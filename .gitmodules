@@ -4,3 +4,6 @@
 [submodule "lib/v4-periphery"]
 	path = lib/v4-periphery
 	url = https://github.com/uniswap/v4-periphery
+[submodule "lib/axiom-v1-contracts"]
+	path = lib/axiom-v1-contracts
+	url = https://github.com/axiom-crypto/axiom-v1-contracts
