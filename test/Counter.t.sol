@@ -28,11 +28,9 @@ contract CounterTest is HookTest, Deployers, GasSnapshot {
         HookTest.initHookTestEnv();
 
         // Deploy the hook to an address with the correct flags
-        uint160 flags = uint160(
-            Hooks.BEFORE_SWAP_FLAG | Hooks.AFTER_SWAP_FLAG | Hooks.BEFORE_MODIFY_POSITION_FLAG
-                | Hooks.AFTER_MODIFY_POSITION_FLAG
-        );
-        (address hookAddress, bytes32 salt) = HookMiner.find(address(this), flags, 0, type(Counter).creationCode, abi.encode(address(manager)));
+        uint160 flags = uint160(Hooks.BEFORE_MODIFY_POSITION_FLAG | Hooks.AFTER_MODIFY_POSITION_FLAG);
+        (address hookAddress, bytes32 salt) =
+            HookMiner.find(address(this), flags, 0, type(Counter).creationCode, abi.encode(address(manager)));
         counter = new Counter{salt: salt}(IPoolManager(address(manager)));
         require(address(counter) == hookAddress, "CounterTest: hook address mismatch");
 
@@ -53,17 +51,5 @@ contract CounterTest is HookTest, Deployers, GasSnapshot {
         // positions were created in setup()
         assertEq(counter.beforeModifyPositionCount(), 3);
         assertEq(counter.afterModifyPositionCount(), 3);
-
-        assertEq(counter.beforeSwapCount(), 0);
-        assertEq(counter.afterSwapCount(), 0);
-
-        // Perform a test swap //
-        int256 amount = 100;
-        bool zeroForOne = true;
-        swap(poolKey, amount, zeroForOne);
-        // ------------------- //
-
-        assertEq(counter.beforeSwapCount(), 1);
-        assertEq(counter.afterSwapCount(), 1);
     }
 }

@@ -12,9 +12,6 @@ import {BalanceDelta} from "@uniswap/v4-core/contracts/types/BalanceDelta.sol";
 contract Counter is BaseHook {
     using PoolIdLibrary for PoolKey;
 
-    uint256 public beforeSwapCount;
-    uint256 public afterSwapCount;
-
     uint256 public beforeModifyPositionCount;
     uint256 public afterModifyPositionCount;
 
@@ -26,29 +23,11 @@ contract Counter is BaseHook {
             afterInitialize: false,
             beforeModifyPosition: true,
             afterModifyPosition: true,
-            beforeSwap: true,
-            afterSwap: true,
+            beforeSwap: false,
+            afterSwap: false,
             beforeDonate: false,
             afterDonate: false
         });
-    }
-
-    function beforeSwap(address, PoolKey calldata, IPoolManager.SwapParams calldata, bytes calldata)
-        external
-        override
-        returns (bytes4)
-    {
-        beforeSwapCount++;
-        return BaseHook.beforeSwap.selector;
-    }
-
-    function afterSwap(address, PoolKey calldata, IPoolManager.SwapParams calldata, BalanceDelta, bytes calldata)
-        external
-        override
-        returns (bytes4)
-    {
-        afterSwapCount++;
-        return BaseHook.afterSwap.selector;
     }
 
     function beforeModifyPosition(address, PoolKey calldata, IPoolManager.ModifyPositionParams calldata, bytes calldata)
