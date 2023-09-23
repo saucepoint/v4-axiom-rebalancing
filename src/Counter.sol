@@ -44,7 +44,7 @@ contract Counter is BaseHook {
 
     function beforeModifyPosition(
         address,
-        PoolKey calldata,
+        PoolKey calldata key,
         IPoolManager.ModifyPositionParams calldata,
         bytes calldata hookData
     ) external override returns (bytes4) {
@@ -59,6 +59,24 @@ contract Counter is BaseHook {
             response.storageResponses
         );
         if (!valid) revert("invalid axiom");
+
+        IAxiomV1Query.StorageResponse memory storageData = response.storageResponses[0];
+
+        // state data is coming from PoolManager
+        require(storageData.addr == address(poolManager), "axiom: not poolmanager");
+
+        // TODO: state data is more than 24 hours old
+        require(storageData.blockNumber < block.number, "axiom: state too new");
+
+        // TODO: confirm its slot0 holds tick data
+        require(storageData.slot == 0, "axiom: not slot0");
+
+        // get old tick and current tick
+        uint256 oldTick = storageData.value;
+        (, int24 tick,,,,,) = poolManager.getSlot0(key.toId());
+
+        // TODO: old state meets market conditions
+        require(oldTick < tick, "axiom: market conditions not met");
 
         return BaseHook.beforeModifyPosition.selector;
     }
