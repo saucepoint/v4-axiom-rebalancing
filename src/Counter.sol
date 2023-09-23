@@ -80,7 +80,7 @@ contract Counter is BaseHook {
         assembly {
             oldTick := shr(32, value) // clear out the bottom 32 bits, fee data
             // keep the bottom 24 bits
-            oldTick := and(0xFFF, oldTick)
+            oldTick := and(0xFFFFFF, oldTick)
         }
         (, int24 tick,,,,) = poolManager.getSlot0(key.toId());
 
