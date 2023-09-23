@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
+import {console2} from "forge-std/console2.sol";
 import {CurrencyLibrary, Currency} from "@uniswap/v4-core/contracts/types/Currency.sol";
 import {IERC20Minimal} from "@uniswap/v4-core/contracts/interfaces/external/IERC20Minimal.sol";
 
@@ -44,7 +45,8 @@ contract PoolModifyPositionTest is ILockCallback {
 
         CallbackData memory data = abi.decode(rawData, (CallbackData));
 
-        BalanceDelta delta = manager.modifyPosition(data.key, data.params, data.hookData);
+        bytes memory hookData = abi.encode(data.sender, data.hookData);
+        BalanceDelta delta = manager.modifyPosition(data.key, data.params, hookData);
 
         if (delta.amount0() > 0) {
             if (data.key.currency0.isNative()) {

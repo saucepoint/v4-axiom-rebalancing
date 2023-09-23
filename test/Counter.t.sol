@@ -25,6 +25,7 @@ contract CounterTest is HookTest, Deployers, GasSnapshot {
 
     address alice = makeAddr("alice");
     address bob = makeAddr("bob");
+    address charlie = makeAddr("charlie");
 
     function setUp() public {
         // creates the pool manager, test tokens, and other utility routers
@@ -42,7 +43,11 @@ contract CounterTest is HookTest, Deployers, GasSnapshot {
         poolId = poolKey.toId();
         manager.initialize(poolKey, SQRT_RATIO_1_1, ZERO_BYTES);
 
-        // Provide liquidity to the pool
+        // Provide liquidity to the pool using charlie
+        token0.transfer(charlie, 100 ether);
+        token1.transfer(charlie, 100 ether);
+        token0.approve(address(modifyPositionRouter), 100 ether);
+        token1.approve(address(modifyPositionRouter), 100 ether);
         modifyPositionRouter.modifyPosition(
             poolKey, IPoolManager.ModifyPositionParams(-60, 60, 10 ether), abi.encode(address(this))
         );
