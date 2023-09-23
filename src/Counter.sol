@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 import {BaseHook} from "v4-periphery/BaseHook.sol";
 
 import {Hooks} from "@uniswap/v4-core/contracts/libraries/Hooks.sol";
+import {Pool} from "@uniswap/v4-core/contracts/libraries/Pool.sol";
 import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.sol";
 import {PoolKey} from "@uniswap/v4-core/contracts/types/PoolKey.sol";
 import {PoolId, PoolIdLibrary} from "@uniswap/v4-core/contracts/types/PoolId.sol";
@@ -72,8 +73,16 @@ contract Counter is BaseHook {
         require(storageData.slot == 0, "axiom: not slot0");
 
         // get old tick and current tick
-        uint256 oldTick = storageData.value;
-        (, int24 tick,,,,,) = poolManager.getSlot0(key.toId());
+        // assuming we use `cast index bytes32 <poolId> 10`, we get a storage slot for Pool.State
+        // luckily slot0 is the first 216 bits of Pool.State
+        uint256 value = storageData.value;
+        int24 oldTick;
+        assembly {
+            oldTick := shr(32, value) // clear out the bottom 32 bits, fee data
+            // keep the bottom 24 bits
+            oldTick := and(0xFFF, oldTick)
+        }
+        (, int24 tick,,,,) = poolManager.getSlot0(key.toId());
 
         // TODO: old state meets market conditions
         require(oldTick < tick, "axiom: market conditions not met");
