@@ -50,5 +50,7 @@ contract CounterTest is HookTest, Deployers, GasSnapshot {
     function testCounterHooks() public {
         // positions were created in setup()
         assertEq(counter.afterModifyPositionCount(), 3);
+
+        console2.logBytes32(PoolId.unwrap(poolId));
     }
 }

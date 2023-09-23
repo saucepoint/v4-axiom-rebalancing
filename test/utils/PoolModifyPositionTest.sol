@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
-import {CurrencyLibrary, Currency} from "../types/Currency.sol";
-import {IERC20Minimal} from "../interfaces/external/IERC20Minimal.sol";
+import {CurrencyLibrary, Currency} from "@uniswap/v4-core/contracts/types/Currency.sol";
+import {IERC20Minimal} from "@uniswap/v4-core/contracts/interfaces/external/IERC20Minimal.sol";
 
-import {ILockCallback} from "../interfaces/callback/ILockCallback.sol";
-import {IPoolManager} from "../interfaces/IPoolManager.sol";
-import {BalanceDelta} from "../types/BalanceDelta.sol";
-import {PoolKey} from "../types/PoolKey.sol";
+import {ILockCallback} from "@uniswap/v4-core/contracts/interfaces/callback/ILockCallback.sol";
+import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.sol";
+import {BalanceDelta} from "@uniswap/v4-core/contracts/types/BalanceDelta.sol";
+import {PoolKey} from "@uniswap/v4-core/contracts/types/PoolKey.sol";
 
 // Forking v4-core's PoolModifyPositionTest to support arbitrary calldata
 contract PoolModifyPositionTest is ILockCallback {
@@ -26,11 +26,11 @@ contract PoolModifyPositionTest is ILockCallback {
         bytes hookData;
     }
 
-    function modifyPosition(PoolKey memory key, IPoolManager.ModifyPositionParams memory params, bytes calldata hookData)
-        external
-        payable
-        returns (BalanceDelta delta)
-    {
+    function modifyPosition(
+        PoolKey memory key,
+        IPoolManager.ModifyPositionParams memory params,
+        bytes calldata hookData
+    ) external payable returns (BalanceDelta delta) {
         delta = abi.decode(manager.lock(abi.encode(CallbackData(msg.sender, key, params, hookData))), (BalanceDelta));
 
         uint256 ethBalance = address(this).balance;
