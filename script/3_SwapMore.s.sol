@@ -47,27 +47,25 @@ contract PoolInitScript is Script, Deployers {
             token0 = _tokenB;
             token1 = _tokenA;
         }
-        // --- DEPLOY HOOK --- //
-        // hook contracts must have specific flags encoded in the address
-        uint160 flags = uint160(Hooks.BEFORE_MODIFY_POSITION_FLAG);
-
-        // Mine a salt that will produce a hook address with the correct flags
-        (address hookAddress, bytes32 salt) =
-            HookMiner.find(CREATE2_DEPLOYER, flags, 3000, type(Counter).creationCode, abi.encode(address(manager)));
-
-        // Deploy the hook using CREATE2
-        vm.broadcast();
-        Counter counter = new Counter{salt: salt}(manager);
-        require(address(counter) == hookAddress, "CounterScript: hook address mismatch");
-
-        // init pool
+        Counter counter = Counter(0x209fE93F355A7A6fA4D94b39c70cA7dB1707CFd5);
         PoolKey memory key =
             PoolKey(Currency.wrap(address(token0)), Currency.wrap(address(token1)), 3000, 60, IHooks(counter));
-        vm.broadcast();
-        manager.initialize(key, SQRT_RATIO_1_1, ZERO_BYTES);
 
-        // create liquidity
-        vm.broadcast();
-        router.modifyPosition(key, IPoolManager.ModifyPositionParams(-6000, 6000, 500 ether), abi.encode(msg.sender));
+        // swap
+        bool zeroForOne = true;
+        int256 amount = 10e18;
+        IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
+            zeroForOne: zeroForOne,
+            amountSpecified: amount,
+            sqrtPriceLimitX96: zeroForOne ? MIN_PRICE_LIMIT : MAX_PRICE_LIMIT // unlimited impact
+        });
+
+        PoolSwapTest.TestSettings memory testSettings =
+            PoolSwapTest.TestSettings({withdrawTokens: true, settleUsingTransfer: true});
+
+        vm.startBroadcast();
+        token0.approve(swapRouter, 1000e18);
+        token1.approve(swapRouter, 1000e18);
+        PoolSwapTest(swapRouter).swap(key, params, testSettings);
     }
 }

@@ -9,12 +9,23 @@ import {ILockCallback} from "@uniswap/v4-core/contracts/interfaces/callback/ILoc
 import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.sol";
 import {BalanceDelta} from "@uniswap/v4-core/contracts/types/BalanceDelta.sol";
 import {PoolKey} from "@uniswap/v4-core/contracts/types/PoolKey.sol";
+import {PoolId, PoolIdLibrary} from "@uniswap/v4-core/contracts/types/PoolId.sol";
+import {IHooks} from "@uniswap/v4-core/contracts/interfaces/IHooks.sol";
 
 // Forking v4-core's PoolModifyPositionTest to support arbitrary calldata
 contract PoolModifyPositionTest is ILockCallback {
     using CurrencyLibrary for Currency;
 
     IPoolManager public immutable manager;
+
+    // move to mapping to track user positions
+    int24 tickLower;
+    int24 tickUpper;
+    int256 liquidity;
+
+    event AxiomV2Call(
+        uint64 indexed sourceChainId, address callerAddr, bytes32 indexed querySchema, bytes32 indexed queryHash
+    );
 
     constructor(IPoolManager _manager) {
         manager = _manager;
@@ -27,11 +38,54 @@ contract PoolModifyPositionTest is ILockCallback {
         bytes hookData;
     }
 
-    function modifyPosition(
-        PoolKey memory key,
-        IPoolManager.ModifyPositionParams memory params,
-        bytes calldata hookData
-    ) external payable returns (BalanceDelta delta) {
+    function expand(
+        uint64 sourceChainId,
+        address callerAddr,
+        bytes32 querySchema,
+        bytes32 queryHash,
+        bytes32[] calldata axiomResults,
+        bytes calldata
+    ) external {
+        // TODO: verify the additional axiom arguments
+
+        PoolKey memory key = PoolKey(
+            Currency.wrap(address(uint160(uint256(axiomResults[0])))),
+            Currency.wrap(address(uint160(uint256(axiomResults[1])))),
+            uint24(uint256(axiomResults[2])),
+            int24(int256(uint256(axiomResults[3]))),
+            IHooks(address(uint160(uint256(axiomResults[4]))))
+        );
+        uint256 slot0Old = uint256(axiomResults[5]);
+        uint256 slot0New = uint256(axiomResults[6]);
+
+        int24 tickOld;
+        int24 tickNew;
+        assembly {
+            tickOld := shr(32, slot0Old)
+            tickOld := and(tickOld, 0xFFFFFF)
+            tickNew := shr(32, slot0New)
+            tickNew := and(tickNew, 0xFFFFFF)
+        }
+
+        // TODO: actual complex tick comparison strategy
+        if (tickOld != tickNew) {
+            emit AxiomV2Call(sourceChainId, callerAddr, querySchema, queryHash);
+
+            // burn
+            IPoolManager.ModifyPositionParams memory params0 =
+                IPoolManager.ModifyPositionParams(tickLower, tickUpper, -liquidity);
+            modifyPosition(key, params0, abi.encode(msg.sender));
+        }
+    }
+
+    function modifyPosition(PoolKey memory key, IPoolManager.ModifyPositionParams memory params, bytes memory hookData)
+        public
+        payable
+        returns (BalanceDelta delta)
+    {
+        tickLower = params.tickLower;
+        tickUpper = params.tickUpper;
+        liquidity = params.liquidityDelta;
         delta = abi.decode(manager.lock(abi.encode(CallbackData(msg.sender, key, params, hookData))), (BalanceDelta));
 
         uint256 ethBalance = address(this).balance;

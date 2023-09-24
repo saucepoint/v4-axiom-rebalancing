@@ -21,8 +21,9 @@ contract PoolInitScript is Script, Deployers {
     using PoolIdLibrary for PoolId;
     using PoolIdLibrary for PoolKey;
 
-    MockERC20 _tokenA = MockERC20(0xd962b16F4ec712D705106674E944B04614F077be);
-    MockERC20 _tokenB = MockERC20(0x5bA874E13D2Cf3161F89D1B1d1732D14226dBF16);
+    PoolModifyPositionTest router = PoolModifyPositionTest(0xb602Cc585b440e901C8A3A51cAb4b4f2a6047681);
+    MockERC20 _tokenA = MockERC20(0x07bFDc27077b4C09a8C38B22Ab48e224fE973777);
+    MockERC20 _tokenB = MockERC20(0x4876480ED2A2C1c73C190b7019fe66aBc0d41eB9);
     MockERC20 token0;
     MockERC20 token1;
 
@@ -36,12 +37,12 @@ contract PoolInitScript is Script, Deployers {
             token0 = _tokenB;
             token1 = _tokenA;
         }
-        Counter counter = Counter(0x20894bB9fA315D68E70339A6b6D91e096e67F81C);
+        Counter counter = Counter(0x209fE93F355A7A6fA4D94b39c70cA7dB1707CFd5);
 
         PoolKey memory key =
             PoolKey(Currency.wrap(address(token0)), Currency.wrap(address(token1)), 3000, 60, IHooks(address(counter)));
-        
-        // 0x1002df3974d44860b5acf65363fc522cdd4f2a9a52ef9ec769e565ab47bb2490
+
+        // 0xb6996c0a8402379ee2de072e61b8c614327e50cbd1316bfa70fa2aefbf76ffe6
         console2.logBytes32(PoolId.unwrap(key.toId()));
     }
 }
