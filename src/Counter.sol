@@ -35,7 +35,7 @@ contract Counter is BaseHook {
             beforeInitialize: false,
             afterInitialize: false,
             beforeModifyPosition: true,
-            afterModifyPosition: true,
+            afterModifyPosition: false,
             beforeSwap: false,
             afterSwap: false,
             beforeDonate: false,
