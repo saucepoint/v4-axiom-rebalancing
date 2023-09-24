@@ -24,13 +24,15 @@ contract PoolInitScript is Script, Deployers {
     bytes32 public constant DATA_QUERY_QUERY_SCHEMA = bytes32(0);
     bytes32 public constant COMPUTE_QUERY_QUERY_SCHEMA =
         0x1e9129a2abe9fd64aabd42b3c559b98af28dc6e7b26d6f4074238147485bbd70;
-    address public constant manager = 0x862Fa52D0c8Bca8fBCB5213C9FEbC49c87A52912;
     address public constant swapRouter = 0x7B2B5A2c377B34079589DDbCeA20427cdb7C8219;
 
     // from 1_Tokens.s.sol/run-latest.json
-    PoolModifyPositionTest router = PoolModifyPositionTest(0xeb4708989b42f0cd327A6Bd8f76a931429137fd7);
-    MockERC20 token0 = MockERC20(0x1B4F103Ff3FdaE81E75Ec278256E5B4f4728b2B2);
-    MockERC20 token1 = MockERC20(0x5Bf9FAbb0d56515658b7d5CC4B1F5c4EaED09e49);
+    IPoolManager manager = IPoolManager(0x862Fa52D0c8Bca8fBCB5213C9FEbC49c87A52912);
+    PoolModifyPositionTest router = PoolModifyPositionTest(0xE5dF461803a59292c6c03978c17857479c40bc46);
+    MockERC20 _tokenA = MockERC20(0xd962b16F4ec712D705106674E944B04614F077be);
+    MockERC20 _tokenB = MockERC20(0x5bA874E13D2Cf3161F89D1B1d1732D14226dBF16);
+    MockERC20 token0;
+    MockERC20 token1;
 
     uint160 public constant MIN_PRICE_LIMIT = TickMath.MIN_SQRT_RATIO + 1;
     uint160 public constant MAX_PRICE_LIMIT = TickMath.MAX_SQRT_RATIO - 1;
@@ -38,29 +40,35 @@ contract PoolInitScript is Script, Deployers {
     function setUp() public {}
 
     function run() public {
+        if (address(_tokenA) < address(_tokenB)) {
+            token0 = _tokenA;
+            token1 = _tokenB;
+        } else {
+            token0 = _tokenB;
+            token1 = _tokenA;
+        }
         // --- DEPLOY HOOK --- //
         // hook contracts must have specific flags encoded in the address
         uint160 flags = uint160(Hooks.BEFORE_MODIFY_POSITION_FLAG);
 
         // Mine a salt that will produce a hook address with the correct flags
         (address hookAddress, bytes32 salt) =
-            HookMiner.find(CREATE2_DEPLOYER, flags, 1000, type(Counter).creationCode, abi.encode(manager));
+            HookMiner.find(CREATE2_DEPLOYER, flags, 2000, type(Counter).creationCode, abi.encode(address(manager)));
 
         // Deploy the hook using CREATE2
         vm.broadcast();
-        Counter counter = new Counter{salt: salt}(IPoolManager(manager));
+        Counter counter = new Counter{salt: salt}(manager);
         require(address(counter) == hookAddress, "CounterScript: hook address mismatch");
 
         // init pool
-        vm.startBroadcast();
         PoolKey memory key =
             PoolKey(Currency.wrap(address(token0)), Currency.wrap(address(token1)), 3000, 60, IHooks(counter));
-        IPoolManager(manager).initialize(key, SQRT_RATIO_1_1, ZERO_BYTES);
-        vm.stopBroadcast();
+        vm.broadcast();
+        manager.initialize(key, SQRT_RATIO_1_1, ZERO_BYTES);
 
         // create liquidity
         vm.broadcast();
-        router.modifyPosition(key, IPoolManager.ModifyPositionParams(-60, 60, 10 ether), ZERO_BYTES);
+        router.modifyPosition(key, IPoolManager.ModifyPositionParams(-60, 60, 10 ether), abi.encode(msg.sender));
 
         // swap
         vm.startBroadcast();
