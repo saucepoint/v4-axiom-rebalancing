@@ -13,7 +13,7 @@ import {BalanceDelta} from "@uniswap/v4-core/contracts/types/BalanceDelta.sol";
 contract Counter is BaseHook {
     using PoolIdLibrary for PoolKey;
 
-    address constant AXIOM_V2_QUERY = 0x8DdE5D4a8384F403F888E1419672D94C570440c9;
+    address public constant AXIOM_V2_QUERY = 0x8DdE5D4a8384F403F888E1419672D94C570440c9;
 
     constructor(IPoolManager _poolManager) BaseHook(_poolManager) {}
 
@@ -35,13 +35,13 @@ contract Counter is BaseHook {
 
     function beforeModifyPosition(
         address,
-        PoolKey calldata key,
+        PoolKey calldata,
         IPoolManager.ModifyPositionParams calldata,
         bytes calldata hookData
-    ) external override returns (bytes4) {
+    ) external pure override returns (bytes4) {
         (address sender, bytes memory data) = abi.decode(hookData, (address, bytes));
         address owner = abi.decode(data, (address));
-        require(sender == owner || owner == AXIOM_V2_QUERY, "axiom: not owner");
+        require(sender == owner || sender == AXIOM_V2_QUERY || owner == AXIOM_V2_QUERY, "axiom: not owner");
         return BaseHook.beforeModifyPosition.selector;
     }
 }

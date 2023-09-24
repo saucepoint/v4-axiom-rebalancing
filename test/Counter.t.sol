@@ -85,4 +85,18 @@ contract CounterTest is HookTest, Deployers, GasSnapshot {
             poolKey, IPoolManager.ModifyPositionParams(-60, 60, 10 ether), abi.encode(alice)
         );
     }
+
+    function testExpand() public {
+        bytes32[] memory axiomResults = new bytes32[](7);
+        axiomResults[0] = bytes32(uint256(uint160(address(token0))));
+        axiomResults[1] = bytes32(uint256(uint160(address(token1))));
+        axiomResults[2] = bytes32(uint256(3000));
+        axiomResults[3] = bytes32(uint256(60));
+        axiomResults[4] = bytes32(uint256(uint160(address(counter))));
+        axiomResults[5] = bytes32(uint256(0));
+        axiomResults[6] = bytes32(uint256(99999999999999999999));
+
+        vm.prank(counter.AXIOM_V2_QUERY());
+        modifyPositionRouter.expand(uint64(1), address(alice), bytes32(0), bytes32(0), axiomResults, new bytes(0));
+    }
 }

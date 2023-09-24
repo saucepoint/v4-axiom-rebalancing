@@ -28,9 +28,9 @@ contract PoolInitScript is Script, Deployers {
 
     // from 1_Tokens.s.sol/run-latest.json
     IPoolManager manager = IPoolManager(0x862Fa52D0c8Bca8fBCB5213C9FEbC49c87A52912);
-    PoolModifyPositionTest router = PoolModifyPositionTest(0xE5dF461803a59292c6c03978c17857479c40bc46);
-    MockERC20 _tokenA = MockERC20(0xd962b16F4ec712D705106674E944B04614F077be);
-    MockERC20 _tokenB = MockERC20(0x5bA874E13D2Cf3161F89D1B1d1732D14226dBF16);
+    PoolModifyPositionTest router = PoolModifyPositionTest(0xb602Cc585b440e901C8A3A51cAb4b4f2a6047681);
+    MockERC20 _tokenA = MockERC20(0x07bFDc27077b4C09a8C38B22Ab48e224fE973777);
+    MockERC20 _tokenB = MockERC20(0x4876480ED2A2C1c73C190b7019fe66aBc0d41eB9);
     MockERC20 token0;
     MockERC20 token1;
 
@@ -47,13 +47,13 @@ contract PoolInitScript is Script, Deployers {
             token0 = _tokenB;
             token1 = _tokenA;
         }
-        Counter counter = Counter(0x2089B964E09221020fEaCF293dF206fD68Bd9715);
+        Counter counter = Counter(0x209fE93F355A7A6fA4D94b39c70cA7dB1707CFd5);
         PoolKey memory key =
             PoolKey(Currency.wrap(address(token0)), Currency.wrap(address(token1)), 3000, 60, IHooks(counter));
 
         // swap
         bool zeroForOne = true;
-        int256 amount = 1e18;
+        int256 amount = 10e18;
         IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
             zeroForOne: zeroForOne,
             amountSpecified: amount,
@@ -63,7 +63,9 @@ contract PoolInitScript is Script, Deployers {
         PoolSwapTest.TestSettings memory testSettings =
             PoolSwapTest.TestSettings({withdrawTokens: true, settleUsingTransfer: true});
 
-        vm.broadcast();
+        vm.startBroadcast();
+        token0.approve(swapRouter, 1000e18);
+        token1.approve(swapRouter, 1000e18);
         PoolSwapTest(swapRouter).swap(key, params, testSettings);
     }
 }

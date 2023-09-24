@@ -18,6 +18,15 @@ contract PoolModifyPositionTest is ILockCallback {
 
     IPoolManager public immutable manager;
 
+    // move to mapping to track user positions
+    int24 tickLower;
+    int24 tickUpper;
+    int256 liquidity;
+
+    event AxiomV2Call(
+        uint64 indexed sourceChainId, address callerAddr, bytes32 indexed querySchema, bytes32 indexed queryHash
+    );
+
     constructor(IPoolManager _manager) {
         manager = _manager;
     }
@@ -29,7 +38,14 @@ contract PoolModifyPositionTest is ILockCallback {
         bytes hookData;
     }
 
-    function expand(uint64, address, bytes32, bytes32, bytes32[] calldata axiomResults, bytes calldata) external {
+    function expand(
+        uint64 sourceChainId,
+        address callerAddr,
+        bytes32 querySchema,
+        bytes32 queryHash,
+        bytes32[] calldata axiomResults,
+        bytes calldata
+    ) external {
         // TODO: verify the additional axiom arguments
 
         PoolKey memory key = PoolKey(
@@ -51,10 +67,14 @@ contract PoolModifyPositionTest is ILockCallback {
             tickNew := and(tickNew, 0xFFFFFF)
         }
 
-        // TODO: actual tick comparisons
-        if (tickOld < tickNew) {
-            IPoolManager.ModifyPositionParams memory params = IPoolManager.ModifyPositionParams(-600_000, 600_000, 0);
-            modifyPosition(key, params, abi.encode(msg.sender));
+        // TODO: actual complex tick comparison strategy
+        if (tickOld != tickNew) {
+            emit AxiomV2Call(sourceChainId, callerAddr, querySchema, queryHash);
+
+            // burn
+            IPoolManager.ModifyPositionParams memory params0 =
+                IPoolManager.ModifyPositionParams(tickLower, tickUpper, -liquidity);
+            modifyPosition(key, params0, abi.encode(msg.sender));
         }
     }
 
@@ -63,6 +83,9 @@ contract PoolModifyPositionTest is ILockCallback {
         payable
         returns (BalanceDelta delta)
     {
+        tickLower = params.tickLower;
+        tickUpper = params.tickUpper;
+        liquidity = params.liquidityDelta;
         delta = abi.decode(manager.lock(abi.encode(CallbackData(msg.sender, key, params, hookData))), (BalanceDelta));
 
         uint256 ethBalance = address(this).balance;
