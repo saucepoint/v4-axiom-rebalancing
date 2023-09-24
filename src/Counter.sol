@@ -9,7 +9,7 @@ import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.s
 import {PoolKey} from "@uniswap/v4-core/contracts/types/PoolKey.sol";
 import {PoolId, PoolIdLibrary} from "@uniswap/v4-core/contracts/types/PoolId.sol";
 import {BalanceDelta} from "@uniswap/v4-core/contracts/types/BalanceDelta.sol";
-import {IAxiomV1Query} from "./external/interfaces/IAxiomV1Query.sol";
+import {IAxiom} from "./external/interfaces/IAxiomV1Query.sol";
 
 struct ResponseStruct {
     bytes32 keccakBlockResponse;
@@ -20,7 +20,7 @@ struct ResponseStruct {
     IAxiomV1Query.StorageResponse[] storageResponses;
 }
 
-contract Counter is BaseHook {
+contract Counter is BaseHook,  {
     using PoolIdLibrary for PoolKey;
 
     uint256 public afterModifyPositionCount;
