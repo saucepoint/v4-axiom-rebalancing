@@ -1,34 +1,42 @@
-# v4-template
-### **A template for writing Uniswap v4 Hooks 🦄**
+# v4-axiom-rebalancing
+## **Trustless v4 LP Rebalancing with Axiom proofs**
 
-[`Use this Template`](https://github.com/saucepoint/v4-template/generate)
+> LVR this, LVR that, why dont you lever some good ol' cryptography
 
-1. The example hook [Counter.sol](src/Counter.sol) demonstrates the `beforeSwap()` and `afterSwap()` hooks
-2. The test template [Counter.t.sol](test/Counter.t.sol) preconfigures the v4 pool manager, test tokens, and test liquidity.
+ *anyone* could modify your LP
 
 ---
 
-### Local Development (Anvil)
+LP Rebalancing: adjusting the ratio of assets in an LP (in response to market conditions) is achieved via:
 
+1. Manual intervention, burn and re-mint LPs with Uniswap Interface
+2. Bot intervention, run your own bots to manage your own position
+3. Trusted 3rd party services, trust that LP managers are acting according to your preferences
+
+With axiom-powered rebalancing, trustless rebalancing is enabled where *anyone* can modify your LP according to defined market conditions.
+
+---
+
+In this example hook, if `token0`'s spot price falls 5% compared to 1 hour ago, rebalance their LP to ratios TODO-XYZ
+
+Process:
+1. Query spot price of the pool as of 1 hour ago
+2. Submits the query to onchain AxiomV1Query contract
+3. Obtain proof data from query fulfillment
+4. Provide proof data to the LP Router
+5. LP Router forwards proof data to `hook.beforeModifyPosition`
+6. Proof data enables LP modification!
+
+---
+
+## Demo (Goerli!)
 *requires [foundry](https://book.getfoundry.sh)*
 
+*requires [bun](bun.sh)*
+
 ```
-forge install
-forge test
-```
-
-Because v4 exceeds the bytecode limit of Ethereum and it's *business licensed*, we can only deploy & test hooks on [anvil](https://book.getfoundry.sh/anvil/).
-
-```bash
-# start anvil, with a larger code limit
-anvil --code-size-limit 30000
-
-# in a new terminal
-forge script script/Counter.s.sol \
-    --rpc-url http://localhost:8545 \
-    --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
-    --code-size-limit 30000 \
-    --broadcast
+cd axiom-query
+bun run index.ts
 ```
 
 ---
