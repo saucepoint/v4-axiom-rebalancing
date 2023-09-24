@@ -18,14 +18,24 @@ import {PoolSwapTest} from "@uniswap/v4-core/contracts/test/PoolSwapTest.sol";
 
 contract PoolInitScript is Script, Deployers {
     using CurrencyLibrary for Currency;
-    using PoolIdLibrary for PoolId;
-    using PoolIdLibrary for PoolKey;
 
+    address constant CREATE2_DEPLOYER = address(0x4e59b44847b379578588920cA78FbF26c0B4956C);
+    address public constant AXIOM_V2_QUERY_GOERLI_ADDR = 0x8DdE5D4a8384F403F888E1419672D94C570440c9;
+    bytes32 public constant DATA_QUERY_QUERY_SCHEMA = bytes32(0);
+    bytes32 public constant COMPUTE_QUERY_QUERY_SCHEMA =
+        0x1e9129a2abe9fd64aabd42b3c559b98af28dc6e7b26d6f4074238147485bbd70;
+    address public constant swapRouter = 0x7B2B5A2c377B34079589DDbCeA20427cdb7C8219;
+
+    // from 1_Tokens.s.sol/run-latest.json
     IPoolManager manager = IPoolManager(0x862Fa52D0c8Bca8fBCB5213C9FEbC49c87A52912);
+    PoolModifyPositionTest router = PoolModifyPositionTest(0xE5dF461803a59292c6c03978c17857479c40bc46);
     MockERC20 _tokenA = MockERC20(0xd962b16F4ec712D705106674E944B04614F077be);
     MockERC20 _tokenB = MockERC20(0x5bA874E13D2Cf3161F89D1B1d1732D14226dBF16);
     MockERC20 token0;
     MockERC20 token1;
+
+    uint160 public constant MIN_PRICE_LIMIT = TickMath.MIN_SQRT_RATIO + 1;
+    uint160 public constant MAX_PRICE_LIMIT = TickMath.MAX_SQRT_RATIO - 1;
 
     function setUp() public {}
 
@@ -38,16 +48,22 @@ contract PoolInitScript is Script, Deployers {
             token1 = _tokenA;
         }
         Counter counter = Counter(0x2089B964E09221020fEaCF293dF206fD68Bd9715);
-
         PoolKey memory key =
-            PoolKey(Currency.wrap(address(token0)), Currency.wrap(address(token1)), 3000, 60, IHooks(address(counter)));
-        
-        // 0x26cb3642af4994f09f35ff8d46a6494c3af9b30fa2999d776bc0245d984728d8
-        console2.logBytes32(PoolId.unwrap(key.toId()));
+            PoolKey(Currency.wrap(address(token0)), Currency.wrap(address(token1)), 3000, 60, IHooks(counter));
 
-        // (,int24 tick,,,,) = manager.getSlot0(key.toId());
-        // console2.log(uint256(1));
-        // //console2.log(int256(tick));
-        // vm.broadcast();
+        // swap
+        bool zeroForOne = true;
+        int256 amount = 1e18;
+        IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
+            zeroForOne: zeroForOne,
+            amountSpecified: amount,
+            sqrtPriceLimitX96: zeroForOne ? MIN_PRICE_LIMIT : MAX_PRICE_LIMIT // unlimited impact
+        });
+
+        PoolSwapTest.TestSettings memory testSettings =
+            PoolSwapTest.TestSettings({withdrawTokens: true, settleUsingTransfer: true});
+
+        vm.broadcast();
+        PoolSwapTest(swapRouter).swap(key, params, testSettings);
     }
 }

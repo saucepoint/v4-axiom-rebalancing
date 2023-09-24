@@ -53,7 +53,7 @@ contract PoolInitScript is Script, Deployers {
 
         // Mine a salt that will produce a hook address with the correct flags
         (address hookAddress, bytes32 salt) =
-            HookMiner.find(CREATE2_DEPLOYER, flags, 2000, type(Counter).creationCode, abi.encode(address(manager)));
+            HookMiner.find(CREATE2_DEPLOYER, flags, 3000, type(Counter).creationCode, abi.encode(address(manager)));
 
         // Deploy the hook using CREATE2
         vm.broadcast();
@@ -68,25 +68,6 @@ contract PoolInitScript is Script, Deployers {
 
         // create liquidity
         vm.broadcast();
-        router.modifyPosition(key, IPoolManager.ModifyPositionParams(-60, 60, 10 ether), abi.encode(msg.sender));
-
-        // swap
-        vm.startBroadcast();
-        token0.approve(address(swapRouter), 1000e18);
-        token1.approve(address(swapRouter), 1000e18);
-        vm.stopBroadcast();
-        bool zeroForOne = true;
-        int256 amount = 10e18;
-        IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
-            zeroForOne: zeroForOne,
-            amountSpecified: amount,
-            sqrtPriceLimitX96: zeroForOne ? MIN_PRICE_LIMIT : MAX_PRICE_LIMIT // unlimited impact
-        });
-
-        PoolSwapTest.TestSettings memory testSettings =
-            PoolSwapTest.TestSettings({withdrawTokens: true, settleUsingTransfer: true});
-
-        vm.broadcast();
-        PoolSwapTest(swapRouter).swap(key, params, testSettings);
+        router.modifyPosition(key, IPoolManager.ModifyPositionParams(-6000, 6000, 1000 ether), abi.encode(msg.sender));
     }
 }
