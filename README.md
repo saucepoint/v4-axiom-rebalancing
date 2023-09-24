@@ -1,34 +1,42 @@
-# v4-template
-### **A template for writing Uniswap v4 Hooks 🦄**
+# Safety Dance - Trustless LP Strategy
 
-[`Use this Template`](https://github.com/saucepoint/v4-template/generate)
+## **Trustless CFMM LP strategy with Axiom**
 
-1. The example hook [Counter.sol](src/Counter.sol) demonstrates the `beforeSwap()` and `afterSwap()` hooks
-2. The test template [Counter.t.sol](test/Counter.t.sol) preconfigures the v4 pool manager, test tokens, and test liquidity.
+> LVR this, LVR that, why dont you lever some good ol' cryptography
+
+Strategy that trustlessly and autonomously rebalances your liquidity into a wider position during times of high market volatility.
 
 ---
 
-### Local Development (Anvil)
+> Trade the vol with the comfort of a warm blanket
 
-*requires [foundry](https://book.getfoundry.sh)*
+The strategy prioritizes LP safety during adverse market conditions. The implementation is as follows:
+
+1. Check current price - price of previous block
+2. If price gaps more than X%, trigger rebalance
+3. Rebalance takes existing position and adds wide-range position
+
+The strategy contracts uses Axiom to query the historical on-chain data for the pool. The spot price in the current block and previous block are retrieved and proved trustless on-chain.
+
+## UniswapV4 and Axiom V2
+
+> New York City's hotest new couple
+
+UniV4 allows any developer to customize the rules and invocations of a liquidity pool. Axiom allows developers to trustless access ethereum historical data from their smart contract.
+
+Together we can build a liquidity pools that respond to market conditions and advanced calculations.
+
+---
+
+## Demo (Goerli!)
+
+_requires [foundry](https://book.getfoundry.sh)_
+
+_requires [bun](bun.sh)_
 
 ```
-forge install
-forge test
-```
-
-Because v4 exceeds the bytecode limit of Ethereum and it's *business licensed*, we can only deploy & test hooks on [anvil](https://book.getfoundry.sh/anvil/).
-
-```bash
-# start anvil, with a larger code limit
-anvil --code-size-limit 30000
-
-# in a new terminal
-forge script script/Counter.s.sol \
-    --rpc-url http://localhost:8545 \
-    --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
-    --code-size-limit 30000 \
-    --broadcast
+cd axiom-query
+bun run index.ts
 ```
 
 ---
@@ -38,4 +46,3 @@ Additional resources:
 [v4-periphery](https://github.com/uniswap/v4-periphery) contains advanced hook implementations that serve as a great reference
 
 [v4-core](https://github.com/uniswap/v4-core)
-
