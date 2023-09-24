@@ -9,6 +9,8 @@ import {ILockCallback} from "@uniswap/v4-core/contracts/interfaces/callback/ILoc
 import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.sol";
 import {BalanceDelta} from "@uniswap/v4-core/contracts/types/BalanceDelta.sol";
 import {PoolKey} from "@uniswap/v4-core/contracts/types/PoolKey.sol";
+import {PoolId, PoolIdLibrary} from "@uniswap/v4-core/contracts/types/PoolId.sol";
+import {IHooks} from "@uniswap/v4-core/contracts/interfaces/IHooks.sol";
 
 // Forking v4-core's PoolModifyPositionTest to support arbitrary calldata
 contract PoolModifyPositionTest is ILockCallback {
@@ -27,11 +29,45 @@ contract PoolModifyPositionTest is ILockCallback {
         bytes hookData;
     }
 
-    function modifyPosition(
-        PoolKey memory key,
-        IPoolManager.ModifyPositionParams memory params,
-        bytes calldata hookData
-    ) external payable returns (BalanceDelta delta) {
+    function expand(
+        uint64 sourceChainId,
+        address callerAddr,
+        bytes32 querySchema,
+        bytes32 queryHash,
+        bytes32[] calldata axiomResults,
+        bytes calldata callbackExtraData
+    ) external {
+        PoolKey memory key = PoolKey(
+            Currency(address(axiomResults[0])),
+            Currency(address(axiomResults[1])),
+            uint24(uint256(axiomResults[2])),
+            int24(uint256(axiomResults[3])),
+            IHooks(address(uint160(uint256(axiomResults[4]))))
+        );
+        uint256 slot0Old = uint256(axiomResults[5]);
+        uint256 slot0New = uint256(axiomResults[6]);
+
+        int24 tickOld;
+        int24 tickNew;
+        assembly {
+            tickOld := shr(32, slot0Old)
+            tickOld := and(tickOld, 0xFFFFFF)
+            tickNew := shr(32, slot0New)
+            tickNew := and(tickNew, 0xFFFFFF)
+        }
+
+        // TODO: actual tick comparisons
+        if (tickOld < tickNew) {
+            IPoolManager.ModifyPositionParams memory params = IPoolManager.ModifyPositionParams(-600_000, 600_000, 0);
+            modifyPosition(key, params, abi.encode(msg.sender));
+        }
+    }
+
+    function modifyPosition(PoolKey memory key, IPoolManager.ModifyPositionParams memory params, bytes memory hookData)
+        public
+        payable
+        returns (BalanceDelta delta)
+    {
         delta = abi.decode(manager.lock(abi.encode(CallbackData(msg.sender, key, params, hookData))), (BalanceDelta));
 
         uint256 ethBalance = address(this).balance;

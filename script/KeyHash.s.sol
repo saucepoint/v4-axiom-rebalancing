@@ -41,7 +41,7 @@ contract PoolInitScript is Script, Deployers {
 
         PoolKey memory key =
             PoolKey(Currency.wrap(address(token0)), Currency.wrap(address(token1)), 3000, 60, IHooks(address(counter)));
-        
+
         // 0x26cb3642af4994f09f35ff8d46a6494c3af9b30fa2999d776bc0245d984728d8
         console2.logBytes32(PoolId.unwrap(key.toId()));
 
