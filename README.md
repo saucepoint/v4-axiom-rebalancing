@@ -1,22 +1,20 @@
-# Safety Dance - Trustless LP Strategy
+# v4-axiom-rebalancing
 
-## **Trustless CFMM LP strategy with Axiom**
+## ***Trustless v4 LP strategy with Axiom***
 
 > LVR this, LVR that, why dont you lever some good ol' cryptography
 
-Strategy that trustlessly and autonomously rebalances your liquidity into a wider position during times of high market volatility.
+Allow any actor to trustlessly rebalance your liquidity into a wider range during times of high market volatility
 
 ---
 
 > Trade the vol with the comfort of a warm blanket
 
-The strategy prioritizes LP safety during adverse market conditions. The implementation is as follows:
+Because Axiom is used to observe market conditions, liquidity providers do not need to run their own 
 
-1. Check current price - price of previous block
+1. Observe a change in market conditions
 2. If price gaps more than X%, trigger rebalance
 3. Rebalance takes existing position and adds wide-range position
-
-The strategy contracts uses Axiom to query the historical on-chain data for the pool. The spot price in the current block and previous block are retrieved and proved trustless on-chain.
 
 ## UniswapV4 and Axiom V2
 
