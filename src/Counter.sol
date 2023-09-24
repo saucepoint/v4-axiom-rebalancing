@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
+import {console2} from "forge-std/console2.sol";
 import {BaseHook} from "v4-periphery/BaseHook.sol";
-
 import {Hooks} from "@uniswap/v4-core/contracts/libraries/Hooks.sol";
 import {Pool} from "@uniswap/v4-core/contracts/libraries/Pool.sol";
 import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.sol";
@@ -49,7 +49,26 @@ contract Counter is BaseHook {
         IPoolManager.ModifyPositionParams calldata,
         bytes calldata hookData
     ) external override returns (bytes4) {
-        if (hookData.length == 0) return BaseHook.beforeModifyPosition.selector;
+        (address sender, bytes memory data) = abi.decode(hookData, (address, bytes));
+        address owner = abi.decode(data, (address));
+        require(sender == owner, "axiom: not owner");
+
+        // _handleAxiom(key, hookData);
+        return BaseHook.beforeModifyPosition.selector;
+    }
+
+    function afterModifyPosition(
+        address,
+        PoolKey calldata,
+        IPoolManager.ModifyPositionParams calldata,
+        BalanceDelta,
+        bytes calldata
+    ) external override returns (bytes4) {
+        afterModifyPositionCount++;
+        return BaseHook.afterModifyPosition.selector;
+    }
+
+    function _handleAxiom(PoolKey memory key, bytes calldata hookData) internal view {
         ResponseStruct memory response = abi.decode(hookData, (ResponseStruct));
         bool valid = axiomQuery.areResponsesValid(
             response.keccakBlockResponse,
@@ -86,7 +105,5 @@ contract Counter is BaseHook {
 
         // TODO: old state meets market conditions
         require(oldTick < tick, "axiom: market conditions not met");
-
-        return BaseHook.beforeModifyPosition.selector;
     }
 }
