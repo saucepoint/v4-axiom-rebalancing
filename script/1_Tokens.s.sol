@@ -7,7 +7,6 @@ import {PoolModifyPositionTest} from "../test/utils/PoolModifyPositionTest.sol";
 import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.sol";
 
 contract TokensScript is Script {
-
     MockERC20 token0;
     MockERC20 token1;
 
@@ -17,7 +16,8 @@ contract TokensScript is Script {
     function run() public {
         vm.startBroadcast();
         // deploy router
-        PoolModifyPositionTest router = new PoolModifyPositionTest(IPoolManager(address(0x862Fa52D0c8Bca8fBCB5213C9FEbC49c87A52912)));
+        PoolModifyPositionTest router =
+            new PoolModifyPositionTest(IPoolManager(address(0x862Fa52D0c8Bca8fBCB5213C9FEbC49c87A52912)));
 
         // deploy tokens
         MockERC20 tokenA = new MockERC20("Yi", "YI", 18);
