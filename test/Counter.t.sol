@@ -31,7 +31,7 @@ contract CounterTest is HookTest, Deployers, GasSnapshot {
         HookTest.initHookTestEnv();
 
         // Deploy the hook to an address with the correct flags
-        uint160 flags = uint160(Hooks.BEFORE_MODIFY_POSITION_FLAG | Hooks.AFTER_MODIFY_POSITION_FLAG);
+        uint160 flags = uint160(Hooks.BEFORE_MODIFY_POSITION_FLAG);
         (address hookAddress, bytes32 salt) =
             HookMiner.find(address(this), flags, 0, type(Counter).creationCode, abi.encode(address(manager)));
         counter = new Counter{salt: salt}(IPoolManager(address(manager)));
@@ -71,13 +71,6 @@ contract CounterTest is HookTest, Deployers, GasSnapshot {
         vm.stopPrank();
     }
 
-    function testCounterHooks() public {
-        // positions were created in setup()
-        assertEq(counter.afterModifyPositionCount(), 3);
-
-        console2.logBytes32(PoolId.unwrap(poolId));
-    }
-
     // --- Router Tests --- //
     // Confirm that Bob cannot modify Alice's position using empty bytes
     function testNotAllowed() public {
@@ -91,5 +84,19 @@ contract CounterTest is HookTest, Deployers, GasSnapshot {
         modifyPositionRouter.modifyPosition(
             poolKey, IPoolManager.ModifyPositionParams(-60, 60, 10 ether), abi.encode(alice)
         );
+    }
+
+    function testExpand() public {
+        bytes32[] memory axiomResults = new bytes32[](7);
+        axiomResults[0] = bytes32(uint256(uint160(address(token0))));
+        axiomResults[1] = bytes32(uint256(uint160(address(token1))));
+        axiomResults[2] = bytes32(uint256(3000));
+        axiomResults[3] = bytes32(uint256(60));
+        axiomResults[4] = bytes32(uint256(uint160(address(counter))));
+        axiomResults[5] = bytes32(uint256(0));
+        axiomResults[6] = bytes32(uint256(99999999999999999999));
+
+        vm.prank(counter.AXIOM_V2_QUERY());
+        modifyPositionRouter.expand(uint64(1), address(alice), bytes32(0), bytes32(0), axiomResults, new bytes(0));
     }
 }

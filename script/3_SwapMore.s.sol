@@ -1,0 +1,71 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.19;
+
+import {Script, console2} from "forge-std/Script.sol";
+import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
+import {PoolModifyPositionTest} from "../test/utils/PoolModifyPositionTest.sol";
+import {IHooks} from "@uniswap/v4-core/contracts/interfaces/IHooks.sol";
+import {Hooks} from "@uniswap/v4-core/contracts/libraries/Hooks.sol";
+import {TickMath} from "@uniswap/v4-core/contracts/libraries/TickMath.sol";
+import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.sol";
+import {PoolKey} from "@uniswap/v4-core/contracts/types/PoolKey.sol";
+import {PoolId, PoolIdLibrary} from "@uniswap/v4-core/contracts/types/PoolId.sol";
+import {Deployers} from "@uniswap/v4-core/test/foundry-tests/utils/Deployers.sol";
+import {CurrencyLibrary, Currency} from "@uniswap/v4-core/contracts/types/Currency.sol";
+import {Counter} from "../src/Counter.sol";
+import {HookMiner} from "../test/utils/HookMiner.sol";
+import {PoolSwapTest} from "@uniswap/v4-core/contracts/test/PoolSwapTest.sol";
+
+contract PoolInitScript is Script, Deployers {
+    using CurrencyLibrary for Currency;
+
+    address constant CREATE2_DEPLOYER = address(0x4e59b44847b379578588920cA78FbF26c0B4956C);
+    address public constant AXIOM_V2_QUERY_GOERLI_ADDR = 0x8DdE5D4a8384F403F888E1419672D94C570440c9;
+    bytes32 public constant DATA_QUERY_QUERY_SCHEMA = bytes32(0);
+    bytes32 public constant COMPUTE_QUERY_QUERY_SCHEMA =
+        0x1e9129a2abe9fd64aabd42b3c559b98af28dc6e7b26d6f4074238147485bbd70;
+    address public constant swapRouter = 0x7B2B5A2c377B34079589DDbCeA20427cdb7C8219;
+
+    // from 1_Tokens.s.sol/run-latest.json
+    IPoolManager manager = IPoolManager(0x862Fa52D0c8Bca8fBCB5213C9FEbC49c87A52912);
+    PoolModifyPositionTest router = PoolModifyPositionTest(0xb602Cc585b440e901C8A3A51cAb4b4f2a6047681);
+    MockERC20 _tokenA = MockERC20(0x07bFDc27077b4C09a8C38B22Ab48e224fE973777);
+    MockERC20 _tokenB = MockERC20(0x4876480ED2A2C1c73C190b7019fe66aBc0d41eB9);
+    MockERC20 token0;
+    MockERC20 token1;
+
+    uint160 public constant MIN_PRICE_LIMIT = TickMath.MIN_SQRT_RATIO + 1;
+    uint160 public constant MAX_PRICE_LIMIT = TickMath.MAX_SQRT_RATIO - 1;
+
+    function setUp() public {}
+
+    function run() public {
+        if (address(_tokenA) < address(_tokenB)) {
+            token0 = _tokenA;
+            token1 = _tokenB;
+        } else {
+            token0 = _tokenB;
+            token1 = _tokenA;
+        }
+        Counter counter = Counter(0x209fE93F355A7A6fA4D94b39c70cA7dB1707CFd5);
+        PoolKey memory key =
+            PoolKey(Currency.wrap(address(token0)), Currency.wrap(address(token1)), 3000, 60, IHooks(counter));
+
+        // swap
+        bool zeroForOne = true;
+        int256 amount = 10e18;
+        IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
+            zeroForOne: zeroForOne,
+            amountSpecified: amount,
+            sqrtPriceLimitX96: zeroForOne ? MIN_PRICE_LIMIT : MAX_PRICE_LIMIT // unlimited impact
+        });
+
+        PoolSwapTest.TestSettings memory testSettings =
+            PoolSwapTest.TestSettings({withdrawTokens: true, settleUsingTransfer: true});
+
+        vm.startBroadcast();
+        token0.approve(swapRouter, 1000e18);
+        token1.approve(swapRouter, 1000e18);
+        PoolSwapTest(swapRouter).swap(key, params, testSettings);
+    }
+}
