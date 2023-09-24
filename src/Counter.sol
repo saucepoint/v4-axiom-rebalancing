@@ -19,17 +19,16 @@ contract Counter is BaseHook, AxiomV2Client {
     constructor(IPoolManager _poolManager) BaseHook(_poolManager) {}
 
     function getHooksCalls() public pure override returns (Hooks.Calls memory) {
-        return
-            Hooks.Calls({
-                beforeInitialize: false,
-                afterInitialize: false,
-                beforeModifyPosition: true,
-                afterModifyPosition: true,
-                beforeSwap: false,
-                afterSwap: false,
-                beforeDonate: false,
-                afterDonate: false
-            });
+        return Hooks.Calls({
+            beforeInitialize: false,
+            afterInitialize: false,
+            beforeModifyPosition: true,
+            afterModifyPosition: false,
+            beforeSwap: false,
+            afterSwap: false,
+            beforeDonate: false,
+            afterDonate: false
+        });
     }
 
     // axiom returns blockNumber, pool address, and price
