@@ -4,40 +4,39 @@
 
 > LVR this, LVR that, why dont you lever some good ol' cryptography
 
-Allow any actor to trustlessly rebalance your liquidity into a wider range during times of high market volatility
+Allow actors to trustlessly rebalance your liquidity
 
 ---
 
 > Trade the vol with the comfort of a warm blanket
 
-Because Axiom is used to observe market conditions, liquidity providers do not need to run their own 
+Because Axiom is used to observe market conditions, liquidity providers do not need to run their own infrastructure or delegate their capital to trusted managers. *Anyone* could modify your position (as long as market conditions are met)
 
-1. Observe a change in market conditions
-2. If price gaps more than X%, trigger rebalance
-3. Rebalance takes existing position and adds wide-range position
+Any actor can:
+
+1. observe a change in market conditions
+2. Upon a sufficient change in market conditions (defined by LPs), use Axiom to generate a proof and initiate execution
+3. Rebalance someone's LP for a monetary incentive
 
 ## UniswapV4 and Axiom V2
 
 > New York City's hotest new couple
 
-UniV4 allows any developer to customize the rules and invocations of a liquidity pool. Axiom allows developers to trustless access ethereum historical data from their smart contract.
+UniV4 allows any developer to customize the rules and invocations of a liquidity pool. Axiom allows developers to trustless access ethereum historical data from their smart contract
 
-Together we can build a liquidity pools that respond to market conditions and advanced calculations.
+Together we can build a liquidity pools that respond to market conditions and advanced calculations
 
 ---
 
 ## Demo (Goerli!)
 
-_requires [foundry](https://book.getfoundry.sh)_
+https://goerli.etherscan.io/tx/0x54ebd44a5181b809ff6c7753e603c2b58530b88eb96a7e0c3db0769dde18040d
 
-_requires [bun](bun.sh)_
-
-```
-cd axiom-query
-bun run index.ts
-```
+https://goerli.etherscan.io/tx/0x3b8d13683a729fd6513f596d4899911dfa0366ca5408f365ca40e5cb14572e65
 
 ---
+
+_requires [foundry](https://book.getfoundry.sh)_
 
 Additional resources:
 
