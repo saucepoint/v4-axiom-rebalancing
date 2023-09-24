@@ -31,7 +31,7 @@ contract CounterTest is HookTest, Deployers, GasSnapshot {
         HookTest.initHookTestEnv();
 
         // Deploy the hook to an address with the correct flags
-        uint160 flags = uint160(Hooks.BEFORE_MODIFY_POSITION_FLAG | Hooks.AFTER_MODIFY_POSITION_FLAG);
+        uint160 flags = uint160(Hooks.BEFORE_MODIFY_POSITION_FLAG);
         (address hookAddress, bytes32 salt) =
             HookMiner.find(address(this), flags, 0, type(Counter).creationCode, abi.encode(address(manager)));
         counter = new Counter{salt: salt}(IPoolManager(address(manager)));
@@ -69,13 +69,6 @@ contract CounterTest is HookTest, Deployers, GasSnapshot {
         token0.approve(address(modifyPositionRouter), 100 ether);
         token1.approve(address(modifyPositionRouter), 100 ether);
         vm.stopPrank();
-    }
-
-    function testCounterHooks() public {
-        // positions were created in setup()
-        assertEq(counter.afterModifyPositionCount(), 3);
-
-        console2.logBytes32(PoolId.unwrap(poolId));
     }
 
     // --- Router Tests --- //
