@@ -30,6 +30,8 @@ Together we can build a liquidity pools that respond to market conditions and ad
 
 ## Demo (Goerli!)
 
+[REPL gist](https://gist.github.com/saucepoint/5e36799b58b711a18542565b53888df0)
+
 https://goerli.etherscan.io/tx/0x54ebd44a5181b809ff6c7753e603c2b58530b88eb96a7e0c3db0769dde18040d
 
 https://goerli.etherscan.io/tx/0x3b8d13683a729fd6513f596d4899911dfa0366ca5408f365ca40e5cb14572e65
