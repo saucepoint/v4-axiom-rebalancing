@@ -35,7 +35,7 @@ contract Counter is BaseHook {
             beforeInitialize: false,
             afterInitialize: false,
             beforeModifyPosition: true,
-            afterModifyPosition: true,
+            afterModifyPosition: false,
             beforeSwap: false,
             afterSwap: false,
             beforeDonate: false,
@@ -88,16 +88,5 @@ contract Counter is BaseHook {
         require(oldTick < tick, "axiom: market conditions not met");
 
         return BaseHook.beforeModifyPosition.selector;
-    }
-
-    function afterModifyPosition(
-        address,
-        PoolKey calldata,
-        IPoolManager.ModifyPositionParams calldata,
-        BalanceDelta,
-        bytes calldata
-    ) external override returns (bytes4) {
-        afterModifyPositionCount++;
-        return BaseHook.afterModifyPosition.selector;
     }
 }
