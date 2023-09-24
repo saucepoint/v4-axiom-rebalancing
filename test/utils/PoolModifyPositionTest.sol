@@ -29,19 +29,14 @@ contract PoolModifyPositionTest is ILockCallback {
         bytes hookData;
     }
 
-    function expand(
-        uint64 sourceChainId,
-        address callerAddr,
-        bytes32 querySchema,
-        bytes32 queryHash,
-        bytes32[] calldata axiomResults,
-        bytes calldata callbackExtraData
-    ) external {
+    function expand(uint64, address, bytes32, bytes32, bytes32[] calldata axiomResults, bytes calldata) external {
+        // TODO: verify the additional axiom arguments
+
         PoolKey memory key = PoolKey(
-            Currency(address(axiomResults[0])),
-            Currency(address(axiomResults[1])),
+            Currency.wrap(address(uint160(uint256(axiomResults[0])))),
+            Currency.wrap(address(uint160(uint256(axiomResults[1])))),
             uint24(uint256(axiomResults[2])),
-            int24(uint256(axiomResults[3])),
+            int24(int256(uint256(axiomResults[3]))),
             IHooks(address(uint160(uint256(axiomResults[4]))))
         );
         uint256 slot0Old = uint256(axiomResults[5]);
