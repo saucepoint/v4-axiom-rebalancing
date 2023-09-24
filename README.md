@@ -8,8 +8,6 @@ Allow actors to trustlessly rebalance your liquidity
 
 ---
 
-> Trade the vol with the comfort of a warm blanket
-
 Because Axiom is used to observe market conditions, liquidity providers do not need to run their own infrastructure or delegate their capital to trusted managers. *Anyone* could modify your position (as long as market conditions are met)
 
 Any actor can:
