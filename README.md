@@ -1,38 +1,38 @@
-# v4-axiom-rebalancing
-## **Trustless v4 LP Rebalancing with Axiom proofs**
+# Safety Dance - Trustless LP Strategy
+
+## **Trustless CFMM LP strategy with Axiom**
 
 > LVR this, LVR that, why dont you lever some good ol' cryptography
 
- *anyone* could modify your LP
+Strategy that trustlessly and autonomously rebalances your liquidity into a wider position during times of high market volatility.
 
 ---
 
-LP Rebalancing: adjusting the ratio of assets in an LP (in response to market conditions) is achieved via:
+> Trade the vol with the comfort of a warm blanket
 
-1. Manual intervention, burn and re-mint LPs with Uniswap Interface
-2. Bot intervention, run your own bots to manage your own position
-3. Trusted 3rd party services, trust that LP managers are acting according to your preferences
+The strategy prioritizes LP safety during adverse market conditions. The implementation is as follows:
 
-With axiom-powered rebalancing, trustless rebalancing is enabled where *anyone* can modify your LP according to defined market conditions.
+1. Check current price - price of previous block
+2. If price gaps more than X%, trigger rebalance
+3. Rebalance takes existing position and adds wide-range position
 
----
+The strategy contracts uses Axiom to query the historical on-chain data for the pool. The spot price in the current block and previous block are retrieved and proved trustless on-chain.
 
-In this example hook, if `token0`'s spot price falls 5% compared to 1 hour ago, rebalance their LP to ratios TODO-XYZ
+## UniswapV4 and Axiom V2
 
-Process:
-1. Query spot price of the pool as of 1 hour ago
-2. Submits the query to onchain AxiomV1Query contract
-3. Obtain proof data from query fulfillment
-4. Provide proof data to the LP Router
-5. LP Router forwards proof data to `hook.beforeModifyPosition`
-6. Proof data enables LP modification!
+> New York City's hotest new couple
+
+UniV4 allows any developer to customize the rules and invocations of a liquidity pool. Axiom allows developers to trustless access ethereum historical data from their smart contract.
+
+Together we can build a liquidity pools that respond to market conditions and advanced calculations.
 
 ---
 
 ## Demo (Goerli!)
-*requires [foundry](https://book.getfoundry.sh)*
 
-*requires [bun](bun.sh)*
+_requires [foundry](https://book.getfoundry.sh)_
+
+_requires [bun](bun.sh)_
 
 ```
 cd axiom-query
@@ -46,4 +46,3 @@ Additional resources:
 [v4-periphery](https://github.com/uniswap/v4-periphery) contains advanced hook implementations that serve as a great reference
 
 [v4-core](https://github.com/uniswap/v4-core)
-
