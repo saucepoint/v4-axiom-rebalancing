@@ -7,3 +7,6 @@
 [submodule "lib/axiom-v1-contracts"]
 	path = lib/axiom-v1-contracts
 	url = https://github.com/axiom-crypto/axiom-v1-contracts
+[submodule "lib/v4-core"]
+	path = lib/v4-core
+	url = https://github.com/uniswap/v4-core

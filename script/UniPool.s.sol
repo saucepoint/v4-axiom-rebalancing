@@ -3,6 +3,7 @@ pragma solidity ^0.8.19;
 
 import {Script, console2} from "forge-std/Script.sol";
 import {Counter} from "../src/Counter.sol";
+import {YiToken} from 
 
 // import {UselessToken} from "../src/UselessToken.sol";
 
@@ -44,23 +45,6 @@ contract UniPoolScript is Script {
         manager.initialize(poolKey, SQRT_RATIO_1_1, initData);
     }
 
-    function createSwaps() internal {
-        int256 amount0 = 0.01e18;
-        int256 amount1 = 0.003e18;
-
-        uint256 count;
-
-        // create 50 unique observations
-        while (count < 50) {
-            count = uint256(hook.ringSizes(poolId));
-            swap(poolKey, amount0, true);
-            skip(12);
-            swap(poolKey, amount1, false);
-            skip(12);
-        }
-    }
-
-    function rebalancePool() internal {}
 
     // vm.stopBroadcast();
     // }
