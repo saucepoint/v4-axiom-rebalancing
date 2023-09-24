@@ -9,9 +9,8 @@ import {IPoolManager} from "@uniswap/v4-core/contracts/interfaces/IPoolManager.s
 import {PoolKey} from "@uniswap/v4-core/contracts/types/PoolKey.sol";
 import {PoolId, PoolIdLibrary} from "@uniswap/v4-core/contracts/types/PoolId.sol";
 import {BalanceDelta} from "@uniswap/v4-core/contracts/types/BalanceDelta.sol";
-import {IAxiomV2client} from "./external/interfaces/IAxiomV2client.sol";
 
-contract Counter is BaseHook, AxiomV2Client {
+contract Counter is BaseHook {
     using PoolIdLibrary for PoolKey;
 
     uint256 public afterModifyPositionCount;
