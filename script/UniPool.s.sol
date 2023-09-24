@@ -25,10 +25,7 @@ contract UniPoolScript is Script {
         vm.startBroadcast();
         vm.warp(); // to-do?
 
-        Counter c = new UniPool(PoolManager, 5, COMPUTE_QUERY_QUERY_SCHEMA);
-
-        UselessToken ut = new UselessToken(address(aa));
-        aa.updateAirdropToken(address(ut));
+        // Counter c = new UniPool(PoolManager, 5, COMPUTE_QUERY_QUERY_SCHEMA);
 
         poolKey = PoolKey(
             Currency.wrap(address(token0)),
@@ -45,6 +42,18 @@ contract UniPoolScript is Script {
         manager.initialize(poolKey, SQRT_RATIO_1_1, initData);
     }
 
+     function swap(PoolKey memory key, int256 amountSpecified, bool zeroForOne) internal {
+        IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
+            zeroForOne: zeroForOne,
+            amountSpecified: amountSpecified,
+            sqrtPriceLimitX96: zeroForOne ? MIN_PRICE_LIMIT : MAX_PRICE_LIMIT // unlimited impact
+        });
+
+        PoolSwapTest.TestSettings memory testSettings =
+            PoolSwapTest.TestSettings({withdrawTokens: true, settleUsingTransfer: true});
+
+        swapRouter.swap(key, params, testSettings);
+    }
 
     // vm.stopBroadcast();
     // }
