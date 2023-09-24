@@ -13,8 +13,6 @@ import {BalanceDelta} from "@uniswap/v4-core/contracts/types/BalanceDelta.sol";
 contract Counter is BaseHook {
     using PoolIdLibrary for PoolKey;
 
-    uint256 public afterModifyPositionCount;
-
     constructor(IPoolManager _poolManager) BaseHook(_poolManager) {}
 
     function getHooksCalls() public pure override returns (Hooks.Calls memory) {
@@ -48,16 +46,5 @@ contract Counter is BaseHook {
 
         // _handleAxiom(key, hookData);
         return BaseHook.beforeModifyPosition.selector;
-    }
-
-    function afterModifyPosition(
-        address,
-        PoolKey calldata,
-        IPoolManager.ModifyPositionParams calldata,
-        BalanceDelta,
-        bytes calldata
-    ) external override returns (bytes4) {
-        afterModifyPositionCount++;
-        return BaseHook.afterModifyPosition.selector;
     }
 }
